@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<link rel="stylesheet" href="MJFstyle.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
+<script src="d3.min.js"></script>
+<script src="graphlayout.js"></script>
+<script type="text/javascript">
+<!--javascript code goes here-->
+
+
+
+
+function post_cypherquery() {
+            // while busy, show we're doing something in the messageArea.
+            $('#messageArea').html('<h3>(loading)</h3>');
+
+            var neo_query = "MATCH path = (n:Artist)--(m:Concert) WHERE (n.firstname CONTAINS '"+$('#cypher-in').val()+"' OR n.lastname CONTAINS '"+$('#cypher-in').val()+"') RETURN n,m,path ";
+            var post_request = {"statements":[{"statement": neo_query,
+				"resultDataContents":["graph"]}]};
+
+            // get the data from neo4j
+	       $.ajax({
+  				type: "POST",
+  				accept: "application/json",
+  				contentType:"application/json; charset=utf-8",
+  				url: "http://localhost:7474/db/data/transaction/commit",
+  				headers: {"Authorization":"Basic bmVvNGo6bmVvNWo="},
+  				data: JSON.stringify(post_request),
+  				success: function(data, textStatus, jqXHR){
+    			//console.log(data);
+          graph = arrange_data(data);
+          //console.log(graph);
+          Nodes = graph.nodes;
+          Links = graph.links;
+          //Nodes.push(graph.nodes);
+          //Links.push(graph.links);
+					    },
+  				failure: function(msg){console.log("failed")}
+				});
+			$('#outputArea').html("<p>Query: '"+ $('#cypher-in').val() +"'</p>");
+            $('#messageArea').html('');
+}
+
+
+
+function run_layout(){
+
+
+//d3.json("miserables.json", function(error, graph) {
+//d3.json("resultgraph.json", function(error, graph) {
+//  if (error) throw error;
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(Links)
+    .enter().append("line");
+//    .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var data_node = svg.selectAll("g").select("node")
+          .data(Nodes);
+
+  var node = data_node
+          .enter().merge(data_node).append("g")
+          .attr("class", "node")
+          .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+          
+  var nodec = node.append("circle")
+      .attr("r", 12)
+//      .attr("fill", function(d) { return color(d.group); })
+      .style("stroke-width", function(d) {
+                        var returnWidth;
+                        if (d.labelV === "Artist") { returnWidth = 1;
+                        } else if (d.labelV === "Concert") { returnWidth = 2;
+                        } else if (d.labelV === "Band") { returnWidth = 2; }
+                        return returnWidth;})
+      .style("stroke","black")
+      .attr("fill", function(d) { return color(d.labelV); });
+
+  icone = node.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
+    .style('font-family', 'FontAwesome')
+    .style('font-size', '14px')
+    .style('display','inline')
+    .text(function(d) { var returnico;
+                        if (d.labelV === "Artist") { returnico = '\uf007';} 
+                        else if (d.labelV === "Band") { returnico = '\uf0c0';} 
+                        else if (d.labelV === "Concert") { returnico = '\uf001';} 
+                        return returnico;});
+ 
+
+  nodec.append("title")
+      .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name + "\n"+ d.Date;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+
+  node.on("click", display2);
+  /*  var text1 = node.append("text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name ;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+  */ 
+  var text1 = node.append("text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name ;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+
+  var text2 = node.append("text")
+    //.attr("x", 28)
+    //.attr("y", "1.0em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Concert") { returnName = d.Date;} 
+                        return returnName;});
+  
+
+
+  simulation
+      .nodes(Nodes)
+      .on("tick", ticked);
+  //simulation
+  //    .text(graph.nodes)
+  //    .on("tick", ticked);
+
+  simulation.force("link").links(Links);
+
+  simulation.alphaTarget(0.3).restart();
+
+
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    nodec
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
+    text1
+        .attr("x", function(d) { return d.x+12; })
+        .attr("y", function(d) { return d.y; });
+    text2
+        .attr("x", function(d) { return d.x+12; })
+        .attr("y", function(d) { return d.y+15; });
+    icone
+        .attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y; });    
+  }
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+
+function display2(d){
+  if (d.labelV === "Artist") { displayartist(d);
+      } else if (d.labelV === "Band") { displayband(d);
+      } else if (d.labelV === "Concert")   { displayconcert(d);
+      };
+            //description = d.labelV + ": " + d.name+ " Date: "+d.Date ;
+                        
+  console.log('Node ID: '+d.MJFid);
+  //update_graph(d.MJFid);
+  //console.log("clicked!")
+}
+
+
+function displayconcert(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Concert");
+  ligne1.append("td").text(d.name);
+  ligne2 = tbodyD.append("tr");
+  ligne2.append("td").text("Date");
+  ligne2.append("td").text(d.Date);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var concert_id = +d.MJFid;
+  $.getJSON("MJFdata.json", function(json) {
+                //console.log(concert_id);
+                //console.log(+artist_id);
+                //console.log(json[concert_id]);
+                //sumD = d3.select("#psummary").text(json[concert_id].summary);
+                sumD = d3.select("#psummary").text(json[concert_id].summary);
+                pw = d3.select("#pwiki");
+                pw.text('Wiki name: '+json[concert_id].searchQ + ',  Wiki suggestion: ' + json[concert_id].sug_searchQ + ',  Wiki categories: ' + json[concert_id].categories);
+                var imgs = d3.select("#details").select("svg").select("image");
+                imgs.attr("xlink:href",json[concert_id].image)
+                    .attr("width", "200")
+                    .attr("height", "200");
+
+                }); 
+}
+
+function displayartist(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Artist");
+  ligne1.append("td").text(d.Firstname + " " + d.Lastname);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var imgs = d3.select("#details").select("svg").select("image");
+  imgs.attr("xlink:href",'')
+      .attr("width", "200")
+      .attr("height", "200");
+
+}
+
+function displayband(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Band");
+  ligne1.append("td").text(d.name);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var imgs = d3.select("#details").select("svg").select("image");
+  imgs.attr("xlink:href",'')
+      .attr("width", "200")
+      .attr("height", "200");
+
+}
+
+}
+
+// Remove force layout and data
+function map_remove(){
+    simulation.stop();
+    simulation
+      .nodes([]);
+  //simulation
+  //    .text(graph.nodes)
+  //    .on("tick", ticked);
+
+  simulation.force("link").links([]);
+//    svg.remove();
+  var svg = d3.select("svg");
+  svg.selectAll("*").remove();
+}
+
+
+</script>
+</head>
+<body>
+<p>
+<div id="messageArea"></div>
+<p>
+Enter an artist name:
+<table>
+  <tr>
+    <td><input name="cypher" id="cypher-in" value="King" /></td>
+    <td><button name="post cypher" onclick="post_cypherquery();">Search</button></td>
+  </tr>
+  <tr><td></td><td><button name="clear" onclick="run_layout();">Show</button></td></tr>
+  <tr><td></td><td><button name="clear" onclick="map_remove();">Clear</button></td></tr>
+</table>
+<p>
+<div id="outputArea"></div>
+<p>
+<div id="graph"></div>
+
+<div class="table">
+    <div class="left">
+        <svg width="960" height="600"></svg>
+    </div>
+    <div class="right" id="details"> 
+       <b>Node details </b>
+       <svg width="200" height="200"></svg>
+    </div>        
+</div>
+<script type="text/javascript">
+  var width = 960,
+    height = 500,
+    padding = 6, // separation between nodes
+    maxRadius = 12;
+
+var n = 100, // total number of nodes
+    m = 10; // number of distinct clusters
+
+var x = d3.scaleOrdinal(d3.schemeCategory10);
+/*var color = d3.scale.category10()
+    .domain(d3.range(m));
+
+var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangePoints([0, width], 1);
+*/
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+//var details = d3.select("#details").append("p").text("Click on the nodes to get the details!");
+
+var svg2text = details;
+var tableD = d3.select("#details").append("table").attr("id","tabledetails");
+var psummary = d3.select("#details").append("p").attr("id","psummary");
+var pwiki = d3.select("#details").append("p").attr("id","pwiki");
+var imgd = d3.select("#details").select("svg").append("svg:image");
+
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+var Nodes = [];
+var Links = [];
+
+
+/*var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.Id; }))
+    .force("charge", d3.forceManyBody().strength(-10))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+*/    
+var simulation = d3.forceSimulation()
+    .force("charge", d3.forceManyBody().strength(-100))
+    .force("link", d3.forceLink().strength(0.1))//.id(function(d) { return d.id; }).strength(0.1))
+    .force("x", d3.forceX())
+    .force("y", d3.forceY())
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+</script>
+
+</body>
+</html>

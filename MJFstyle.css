@@ -1,0 +1,50 @@
+.links {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.node circle {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  display: none;
+  font: 10px sans-serif;
+}
+
+.node:hover circle {
+  fill: #000;
+}
+
+.node:hover text {
+  display: inline;
+}
+
+.cell {
+  fill: none;
+  pointer-events: all;
+}
+/*
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.text1 text{
+  font: 10px sans-serif;
+}
+*/
+
+.table { border:1px solid black; padding:10px; width:1400px; overflow:hidden; }
+.left { float:left; width:960px; }
+.right { float:right; width:400px;  }
+
+td, th {
+    padding: 1px 4px;
+}

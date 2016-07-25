@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.node circle {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  display: none;
+  font: 10px sans-serif;
+}
+
+.node:hover circle {
+  fill: #000;
+}
+
+.node:hover text {
+  display: inline;
+}
+
+.cell {
+  fill: none;
+  pointer-events: all;
+}
+/*
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.text1 text{
+  font: 10px sans-serif;
+}
+*/
+
+.table { border:1px solid black; padding:10px; width:1400px; overflow:hidden; }
+.left { float:left; width:960px; }
+.right { float:right; width:400px;  }
+
+td, th {
+    padding: 1px 4px;
+}
+
+</style>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<div class="table">
+    <div class="left">
+        <svg width="960" height="600"></svg>
+    </div>
+    <div class="right" id="details">   
+       <b>Node details </b>
+    </div>        
+</div>
+
+
+<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+<script src="d3.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var details = d3.select("#details").append("p").text("Click on the nodes to get the details!");
+
+var svg2text = details;
+var tableD = d3.select("#details").append("table").attr("id","tabledetails");
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+
+var width = 960,
+    height = 500,
+    padding = 6, // separation between nodes
+    maxRadius = 12;
+
+var n = 100, // total number of nodes
+    m = 10; // number of distinct clusters
+
+var x = d3.scaleOrdinal(d3.schemeCategory10);
+/*var color = d3.scale.category10()
+    .domain(d3.range(m));
+
+var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangePoints([0, width], 1);
+*/
+
+
+/*var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.Id; }))
+    .force("charge", d3.forceManyBody().strength(-10))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+*/    
+var simulation = d3.forceSimulation()
+    .force("charge", d3.forceManyBody().strength(-100))
+    .force("link", d3.forceLink().iterations(4).id(function(d) { return d.Id; }).strength(0.1))
+    .force("x", d3.forceX())
+    .force("y", d3.forceY())
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+//d3.json("miserables.json", function(error, graph) {
+d3.json("resultgraph.json", function(error, graph) {
+  if (error) throw error;
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line");
+//    .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll("g")
+          .data(graph.nodes)
+          .enter().append("g")
+          .attr("class", "node")
+          .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+          
+  var nodec = node.append("circle")
+      .attr("r", 12)
+//      .attr("fill", function(d) { return color(d.group); })
+      .style("stroke-width", function(d) {
+                        var returnWidth;
+                        if (d.labelV === "Artist") { returnWidth = 1;
+                        } else if (d.labelV === "Concert") { returnWidth = 2;
+                        } else if (d.labelV === "Band") { returnWidth = 2; }
+                        return returnWidth;})
+      .style("stroke","black")
+      .attr("fill", function(d) { return color(d.labelV); });
+
+  icone = node.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
+    .style('font-family', 'FontAwesome')
+    .style('font-size', '14px')
+    .style('display','inline')
+    .text(function(d) { var returnico;
+                        if (d.labelV === "Artist") { returnico = '\uf007';} 
+                        else if (d.labelV === "Band") { returnico = '\uf0c0';} 
+                        else if (d.labelV === "Concert") { returnico = '\uf001';} 
+                        return returnico;});
+ 
+
+  nodec.append("title")
+      .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name + "\n"+ d.Date;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+
+  node.on("click", display2);
+  /*  var text1 = node.append("text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name ;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+  */ 
+  var text1 = node.append("text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Artist") { returnName = d.Firstname + " " + d.Lastname;
+                        } else if (d.labelV === "Concert") { returnName = d.name ;
+                        } else if (d.labelV === "Band") { returnName = d.name; }
+                        return returnName;});
+
+  var text2 = node.append("text")
+    //.attr("x", 28)
+    //.attr("y", "1.0em")
+    .text(function(d) { var returnName;
+                        if (d.labelV === "Concert") { returnName = d.Date;} 
+                        return returnName;});
+  
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+  //simulation
+  //    .text(graph.nodes)
+  //    .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+
+
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    nodec
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
+    text1
+        .attr("x", function(d) { return d.x+12; })
+        .attr("y", function(d) { return d.y; });
+    text2
+        .attr("x", function(d) { return d.x+12; })
+        .attr("y", function(d) { return d.y+15; });
+    icone
+        .attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y; });    
+  }
+});
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+function display2(d){
+  if (d.labelV === "Artist") { displayartist(d);
+                        } else if (d.labelV === "Concert") { displayconcert(d);   //description = d.labelV + ": " + d.name+ " Date: "+d.Date ;
+                        } else if (d.labelV === "Band") { displayband(d);}
+  
+  //console.log("clicked!")
+}
+
+
+function displayconcert(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Concert");
+  ligne1.append("td").text(d.name);
+  ligne2 = tbodyD.append("tr");
+  ligne2.append("td").text("Date");
+  ligne2.append("td").text(d.Date);
+}
+
+function displayartist(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Artist");
+  ligne1.append("td").text(d.Firstname + " " + d.Lastname);
+}
+
+function displayband(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Band");
+  ligne1.append("td").text(d.name);
+}
+
+</script>
