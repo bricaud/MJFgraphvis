@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>MJF EXPLORER</title>
 <head>
 <link rel="stylesheet" href="MJFstyle.css">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<link rel="stylesheet" href="assets/css/styles.css">
+<!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
+<link rel="stylesheet" href="font-awesome.min.css">
+<script src="jquery-1.11.3.min.js"></script>
+<!-- <link rel="stylesheet" href="68eddd94.main.css">-->
+
 <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
 <script src="d3.min.js"></script>
 <script src="graphlayout.js"></script>
@@ -12,12 +21,9 @@
 
 
 
-
-
-
 function run_layout(){
 
-         
+
 //d3.json("miserables.json", function(error, graph) {
 //d3.json("resultgraph.json", function(error, graph) {
 //  if (error) throw error;
@@ -167,7 +173,6 @@ function display2(d){
 
 
 function displayconcert(d){
-  console.log(d)
   tableDs = d3.select("#tabledetails")
   tableDs.select("tbody").remove();
   tbodyD = tableDs.append("tbody");
@@ -273,6 +278,21 @@ function displayband(d){
   imgs.attr("xlink:href",'')
       .attr("width", "200")
       .attr("height", "200");
+      var band_id = +d.MJFid;
+  $.getJSON("MJFdatabands.json", function(json) {
+                //console.log(concert_id);
+                //console.log(+artist_id);
+                //console.log(json[concert_id]);
+                //sumD = d3.select("#psummary").text(json[concert_id].summary);
+                sumD = d3.select("#psummary").text(json[band_id].summary);
+                pw = d3.select("#pwiki");
+                pw.text('Wiki name: '+json[band_id].searchQ + ',  Wiki suggestion: ' + json[band_id].sug_searchQ + ',  Wiki categories: ' + json[band_id].categories);
+                var imgs = d3.select("#details").select("svg").select("image");
+                imgs.attr("xlink:href",json[band_id].image)
+                    .attr("width", "200")
+                    .attr("height", "200");
+
+                }); 
 
 }
 
@@ -295,44 +315,59 @@ function map_remove(){
 
 
 </script>
-</head>
-<body>
-<p>
-<div id="messageArea"></div>
-<p>
-Enter an artist name:
-<table>
-  <tr>
-    <td><input name="cypher" id="cypher-in" value="King" /></td>
-    <td>
-      <label for="type">Select neighbors type:</label>
-      <select id="n_type" name="type">
-      <option value="1"> Concerts </option>
-      <option value="2"> Bands </option>
-      <option value="3" selected> Concerts and Bands </option>
-      </select>
-    </td>
-    <td><button name="post cypher" onclick="post_cypherquery();">Search</button></td>
-  </tr>
-  <tr><td></td><td></td><td><button name="clear" onclick="run_layout();">Show</button></td></tr>
-  <tr><td></td><td></td><td><button name="clear" onclick="map_remove();">Clear</button></td></tr>
-</table>
-<p>
-<div id="outputArea"></div>
-<p>
-<div id="graph"></div>
 
-<div class="table">
-    <div class="left">
-        <svg width="960" height="600"></svg>
-    </div>
-    <div class="right" id="details"> 
-       <b>Node details </b>
-       <svg width="200" height="200"></svg>
-    </div>        
-</div>
-<script type="text/javascript">
 
+
+
+	</head>
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">MJF EXPLORER</h1>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+					<li>Enter an artist name: <input name="cypher" id="cypher-in" value="King" /></li>
+					<li><label for="type">Select neighbors type:</label>
+    					<select id="n_type" name="type">
+    					<option value="1"> Concerts </option>
+      					<option value="2"> Bands </option>
+      					<option value="3" selected> Concerts and Bands </option>
+      					</select>
+      				</li>
+					<li><button name="post cypher" onclick="post_cypherquery();">Search</button></li>
+					<li><button name="clear" onclick="run_layout();">Show</button></li>
+					<li><button name="clear" onclick="map_remove();">Clear</button></li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main">
+					<!--<svg width="800" height="800"></svg>-->
+					<svg width="900" height="900"></svg>
+
+				</div>
+				<div class="aside" id="details" style="background-color:transparent;">
+					<div id="messageArea"></div><div id="outputArea"></div>
+       				<center><svg width="200" height="200"></svg></center>
+				</div>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div  class="main" id="Wiki_details" style="background-color:transparent;">	
+				</div>
+			</div class="container">
+		</div>
+		<div class="footer">
+			<div class="container">
+				<a href="#">About</a>
+			</div>
+		</div>
+	<script type="text/javascript">
   var width = 960,
     height = 500,
     padding = 6, // separation between nodes
@@ -355,10 +390,10 @@ var svg = d3.select("svg"),
     height = +svg.attr("height");
 //var details = d3.select("#details").append("p").text("Click on the nodes to get the details!");
 
-var svg2text = details;
+//var svg2text = details;
 var tableD = d3.select("#details").append("table").attr("id","tabledetails");
 var psummary = d3.select("#details").append("p").attr("id","psummary");
-var pwiki = d3.select("#details").append("p").attr("id","pwiki");
+var pwiki = d3.select("#Wiki_details").append("p").attr("id","pwiki");
 var imgd = d3.select("#details").select("svg").append("svg:image");
 
 var color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -381,5 +416,5 @@ var simulation = d3.forceSimulation()
 
 </script>
 
-</body>
+	</body>
 </html>

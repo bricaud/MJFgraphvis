@@ -40,11 +40,11 @@
   font: 10px sans-serif;
 }
 */
-
-.table { border:1px solid black; padding:10px; width:1400px; overflow:hidden; }
+/*.table { border:0px solid black; padding:10px; width:1400px; overflow:hidden;border-spacing:0;border-collapse:collapse;}
 .left { float:left; width:960px; }
 .right { float:right; width:400px;  }
 
 td, th {
     padding: 1px 4px;
 }
+*/

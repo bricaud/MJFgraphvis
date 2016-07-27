@@ -1,4 +1,46 @@
 
+
+
+function post_cypherquery() {
+        // Neo4j query
+
+        if ($('#n_type').val()==1){
+          var neo_query = "MATCH path = (n:Artist)--(m:Concert) WHERE (n.firstname CONTAINS '"+$('#cypher-in').val()+"' OR n.lastname CONTAINS '"+$('#cypher-in').val()+"') RETURN n,m,path ";}
+          else if ($('#n_type').val()==2){
+            var neo_query = "MATCH path = (n:Artist)--(m:Band) WHERE (n.firstname CONTAINS '"+$('#cypher-in').val()+"' OR n.lastname CONTAINS '"+$('#cypher-in').val()+"') RETURN n,m,path ";}
+          else if ($('#n_type').val()==3){
+            var neo_query = "MATCH path = (n:Artist)--(m) WHERE (n.firstname CONTAINS '"+$('#cypher-in').val()+"' OR n.lastname CONTAINS '"+$('#cypher-in').val()+"') RETURN n,m,path ";}
+
+        // while busy, show we're doing something in the messageArea.
+        $('#messageArea').html('<h3>(loading)</h3>');
+
+        var post_request = {"statements":[{"statement": neo_query,
+          "resultDataContents":["graph"]}]};
+
+        // get the data from neo4j
+        $.ajax({
+          type: "POST",
+          accept: "application/json",
+          contentType:"application/json; charset=utf-8",
+          url: "http://localhost:7474/db/data/transaction/commit",
+          headers: {"Authorization":"Basic bmVvNGo6bmVvNWo="},
+          data: JSON.stringify(post_request),
+          success: function(data, textStatus, jqXHR){
+              //console.log(data);
+              graph = arrange_data(data);
+              //console.log(graph);
+              Nodes = graph.nodes;
+              Links = graph.links;
+              //Nodes.push(graph.nodes);
+              //Links.push(graph.links);
+              },
+          failure: function(msg){console.log("failed")}
+        });
+        $('#outputArea').html("<p>Query: '"+ $('#cypher-in').val() +"'</p>");
+        $('#messageArea').html('');
+}
+
+
 function idIndex(a,id) {
       for (var i=0;i<a.length;i++) 
       {if (a[i].id == id) return i;}
@@ -12,7 +54,7 @@ function arrange_data(data) {
       row.graph.nodes.forEach(function (n) 
       {
         if (idIndex(nodes,n.id) == null)
-              nodes.push({id:n.id,labelV:n.labels[0],Firstname:n.properties.firstname,Lastname:n.properties.lastname, MJFid:n.properties.id, name:n.properties.name,
+              nodes.push({id:n.id,labelV:n.labels[0],Firstname:n.properties.firstname,Lastname:n.properties.lastname, MJFid:n.properties.id, name:n.properties.name, Date:n.properties.date,
               genre:n.properties.genre,genreW:n.properties.genreW,genreT:n.properties.genreT,genreF:n.properties.genreF});
       });
       links = links.concat( row.graph.relationships.map(function(r) {
