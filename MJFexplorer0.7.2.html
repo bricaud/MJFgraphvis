@@ -17,7 +17,7 @@
 <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
 <script src="d3.min.js"></script>
 <script src="MJFexplorer.conf.js"></script>
-<script src="graphlayout.js"></script>
+<script src="graphlayout0.7.2.js"></script>
 <script type="text/javascript">
 <!--javascript code goes here-->
 
@@ -68,7 +68,7 @@ function displayconcert(d){
   sumD = d3.select("#psummary").text('');
   pw = d3.select("#pwiki").text('');
   var concert_id = +d.MJFid;
-  $.getJSON("MJFdata.json", function(json) {
+  $.getJSON(JSON_CONCERTS, function(json) {
                 //console.log(concert_id);
                 //console.log(+artist_id);
                 //console.log(json[concert_id]);
@@ -146,7 +146,7 @@ function displayband(d){
       .attr("width", "200")
       .attr("height", "200");
       var band_id = +d.MJFid;
-  $.getJSON("MJFdatabands.json", function(json) {
+  $.getJSON(JSON_BANDS, function(json) {
                 //console.log(concert_id);
                 //console.log(+artist_id);
                 //console.log(json[concert_id]);
@@ -282,9 +282,12 @@ function refresh_data(d,center_f,active_node){
   if(active_node){
     d3.selectAll(".node").each(function(d){
       if(d.id==active_node){
+        n_radius = Number(d3.select(this).select(".base_circle").attr("r"))+6;
+        console.log(d3.select(this).select("circle").attr("r"))
+        console.log(n_radius)
         d3.select(this)
           .append("circle").classed("Active",true)
-          .attr("r", 18)
+          .attr("r", n_radius)
           .attr("fill", function(d) { return color(d.labelV); })
           .attr("opacity",0.3)
           .moveToBack();
@@ -298,10 +301,16 @@ function refresh_data(d,center_f,active_node){
     });
   }
 
-  node.on("click", clicked);
-
   node_pin = d3.selectAll(".Pin");
   node_pin.on("click",pin_it);
+
+  node.on("click", clicked)
+      .on("mouseover", function(){d3.select(this).select(".Pin").style("visibility", "visible");})
+      .on("mouseout", function(){
+        chosen_node = d3.select(this);
+        if(!chosen_node.classed("pinned"))
+          d3.select(this).select(".Pin").style("visibility", "hidden");
+      });
 
   svg_graph.selectAll("g").filter(".pinned").moveToFront();
 
@@ -487,7 +496,7 @@ function search_query(){
 	<body>
 		<div class="header">
 			<div class="container">
-				<h1 class="header-heading">MJF EXPLORER 0.6</h1>
+				<h1 class="header-heading">MJF EXPLORER 0.7.2</h1>
 			</div>
 		</div>
 		<div class="nav-bar">

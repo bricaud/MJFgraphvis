@@ -142,7 +142,7 @@ function decorate_node(node){
   }
   node.moveToFront();
 
-  var nodec = node.append("circle")
+  var nodec = node.append("circle").classed("base_circle",true)
       //.attr("r", 12)
       .attr("r",node_size)
 //      .attr("fill", function(d) { return color(d.group); })
@@ -204,6 +204,7 @@ function decorate_node(node){
       .attr("transform", function(d) { return "translate("+(node_size(d)*3/4)+","+(-node_size(d)*3/4)+")"; })
       .attr("fill", function(d) { return color(d.labelV); })
       .moveToBack()
+      .style("visibility", "hidden");
 
 }
 

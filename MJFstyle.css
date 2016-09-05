@@ -36,7 +36,7 @@
 }
 
 .node:hover circle {
-  fill: #000;
+  stroke-opacity: 0.6;
 }
 
 .node:hover text {
@@ -54,7 +54,7 @@
 }
 
 .pinned:hover circle {
-  fill: #000;
+  stroke-opacity: 0.6;
 }
 
 .pinned:hover text {
