@@ -5,6 +5,22 @@ function post_cypherquery() {
   // Neo4j CYPHER query
   var input_string = $('#cypher-in').val();
   var filtered_string = input_string.replace(/[^a-zA-Z]+/g, ''); //refuse any character not in the alphabet
+  if (filtered_string.length>30) filtered_string = filtered_string.substring(0,30); // shorten long strings
+  // save the query in a file using PHP
+  user_action = "user_action=query&request="+filtered_string;
+  request = $.ajax({
+    url: "/monitor.php",
+    type: "POST",
+    //contentType:"text/plain; charset=utf-8",
+    data: user_action
+  });
+  // Callback handler that will be called on success
+  request.done(function (response, textStatus, jqXHR){
+    // Log a message to the console
+    console.log("Hooray, it worked!");
+  });
+
+  // call the graph database
   if ($('#n_type').val()==1){
     var neo_query = "MATCH path = (n:Artist)--(m:Concert) WHERE (n.firstname =~ '(?i)"+filtered_string+".*' OR n.lastname =~ '(?i)"+filtered_string+".*') RETURN n,m,path ";}
   else if ($('#n_type').val()==2){
@@ -24,6 +40,7 @@ function post_cypherquery() {
     contentType:"application/json; charset=utf-8",
     url: GRAPH_DATABASE_URL,
     headers: GRAPH_DATABASE_AUTH,
+    Timeout: 2000,
     data: JSON.stringify(post_request),
     success: function(data, textStatus, jqXHR){
       //console.log(data,data.results[0].data.length);
@@ -77,6 +94,7 @@ function click_query(d) {
     contentType:"application/json; charset=utf-8",
     url: GRAPH_DATABASE_URL,
     headers: GRAPH_DATABASE_AUTH,
+    Timeout:2000,
     data: JSON.stringify(post_request),
     success: function(data, textStatus, jqXHR){
       //console.log(graph);
@@ -130,7 +148,7 @@ function arrange_data(data) {
 
 /////////////////////////////////////////////////////////////
 // decorate the node
-function decorate_node(node){
+function decorate_node(node,with_active_node){
   // the node layout is defined here
   // function for drawing the node size according to the node degree
   function node_size(d){
@@ -150,6 +168,8 @@ function decorate_node(node){
         return returnWidth;})
       .style("stroke","black")
       .attr("fill", function(d) { return color(d.labelV); });
+
+  //node_base_circle.transition();
 
   node_base_circle.append("title")
     .text(function(d) { 
@@ -184,7 +204,8 @@ function decorate_node(node){
       } else if (d.labelV === "Concert") { returnName = d.name ;
       } else if (d.labelV === "Band") { returnName = d.name; }
       return returnName;
-    });
+    })
+    .style("visibility", "hidden");
 
   var text_date = node.append("text").classed("text_details",true)
     //.attr("x", 12)
@@ -195,7 +216,8 @@ function decorate_node(node){
       var returnName;
       if (d.labelV === "Concert") { returnName = d.Date;} 
       return returnName;
-    });
+    })
+    .style("visibility", "hidden");
 
 //  var node_pin = node.append("circle").classed("Pin",true)
 //      .attr("r", node_size)
@@ -210,6 +232,28 @@ function decorate_node(node){
       .moveToBack()
       .style("visibility", "hidden");
 
+  // spot the active node and draw a circle around it
+  if(with_active_node){
+    d3.selectAll(".node").each(function(d){
+      if(d.id==with_active_node){
+        n_radius = Number(d3.select(this).select(".base_circle").attr("r"))+6;
+        console.log(d3.select(this).select("circle").attr("r"))
+        console.log(n_radius)
+        d3.select(this)
+          .append("circle").classed("Active",true)
+          .attr("r", n_radius)
+          .attr("fill", function(d) { return color(d.labelV); })
+          .attr("opacity",0.3)
+          .moveToBack();
+          //.attr("transform", function(d) { return "translate(-12,-12)"; })
+          //.attr("fill", function(d) { return color(d.labelV); });
+          //.append("circle").classed("Active",true)
+          //.attr("r", 4)
+          //.attr("transform", function(d) { return "translate(-12,-12)"; })
+          //.attr("fill", function(d) { return color(d.labelV); });
+      }
+    });
+  }
 }
 
 ///////////////////////////////////////

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>MJF EXPLORER</title>
+<head>
+<link rel="stylesheet" href="MJFstyle0.7.3.css">
+<link rel="stylesheet" href="assets/css/styles.css">
+<!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
+<link rel="stylesheet" href="font-awesome.min.css">
+<!--<script src="jquery-1.11.3.min.js"></script>-->
+<script src="jquery-3.1.0.min.js"></script>
+<!-- <link rel="stylesheet" href="68eddd94.main.css">-->
+
+<!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
+<script src="d3.min.js"></script>
+<script src="MJFexplorer.conf.js"></script>
+<script src="graphlayout0.7.3.js"></script>
+<script type="text/javascript">
+<!--javascript code goes here-->
+
+
+function display_info(d){
+  if (d.labelV === "Artist") { displayartist(d);
+  } else if (d.labelV === "Band") { displayband(d);
+    } else if (d.labelV === "Concert")   { displayconcert(d);
+      };
+            //description = d.labelV + ": " + d.name+ " Date: "+d.Date ;
+  //Nodes.push(graphadd.nodes);
+  //Links.push(graphadd.links);                      
+  console.log('Node ID: '+d.MJFid);
+  //update_graph(d.MJFid);
+  //console.log("clicked!")
+}
+
+
+
+function displayconcert(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Concert");
+  ligne1.append("td").text(d.name);
+  ligne2 = tbodyD.append("tr");
+  ligne2.append("td").text("Date");
+  ligne2.append("td").text(d.Date);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  concertDate = new Date(d.Date);
+  //console.log(d.Date+' converted to '+concertDate+ ' YEAR '+concertDate.getFullYear());
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var concert_id = +d.MJFid;
+  $.getJSON(JSON_CONCERTS, function(json) {
+                //console.log(concert_id);
+                //console.log(+artist_id);
+                //console.log(json[concert_id]);
+                //sumD = d3.select("#psummary").text(json[concert_id].summary);
+                sumD = d3.select("#psummary").text(json[concert_id].summary);
+                pw = d3.select("#pwiki");
+                pw.text('Wiki name: '+json[concert_id].searchQ + ',  Wiki suggestion: ' + json[concert_id].sug_searchQ + ',  Wiki categories: ' + json[concert_id].categories);
+                var imgs = d3.select("#details").select("svg").select("image");
+                imgs.attr("xlink:href",json[concert_id].image)
+                    .attr("width", "200")
+                    .attr("height", "200");
+
+                }); 
+}
+
+function displayartist(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Artist");
+  ligne1.append("td").text(d.Firstname + " " + d.Lastname);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var imgs = d3.select("#details").select("svg").select("image");
+  imgs.attr("xlink:href",'')
+      .attr("width", "200")
+      .attr("height", "200");
+
+}
+
+function displayband(d){
+  tableDs = d3.select("#tabledetails")
+  tableDs.select("tbody").remove();
+  tbodyD = tableDs.append("tbody");
+  ligne1 = tbodyD.append("tr");
+  ligne1.append("td").text("Band");
+  ligne1.append("td").text(d.name);
+  ligne3 = tbodyD.append("tr");
+  ligne3.append("td").text("ID");
+  ligne3.append("td").text(d.MJFid);
+  ligne4 = tbodyD.append("tr");
+  ligne4.append("td").text("Genre");
+  ligne4.append("td").text(d.genre);
+  ligne5 = tbodyD.append("tr");
+  ligne5.append("td").text("GenreW");
+  ligne5.append("td").text(d.genreW);
+  ligne6 = tbodyD.append("tr");
+  ligne6.append("td").text("GenreF");
+  ligne6.append("td").text(d.genreF);
+  ligne7 = tbodyD.append("tr");
+  ligne7.append("td").text("GenreT");
+  ligne7.append("td").text(d.genreT);
+  // Wiki part
+  sumD = d3.select("#psummary").text('');
+  pw = d3.select("#pwiki").text('');
+  var imgs = d3.select("#details").select("svg").select("image");
+  imgs.attr("xlink:href",'')
+      .attr("width", "200")
+      .attr("height", "200");
+      var band_id = +d.MJFid;
+  $.getJSON(JSON_BANDS, function(json) {
+                //console.log(concert_id);
+                //console.log(+artist_id);
+                //console.log(json[concert_id]);
+                //sumD = d3.select("#psummary").text(json[concert_id].summary);
+                sumD = d3.select("#psummary").text(json[band_id].summary);
+                pw = d3.select("#pwiki");
+                pw.text('Wiki name: '+json[band_id].searchQ + ',  Wiki suggestion: ' + json[band_id].sug_searchQ + ',  Wiki categories: ' + json[band_id].categories);
+                var imgs = d3.select("#details").select("svg").select("image");
+                imgs.attr("xlink:href",json[band_id].image)
+                    .attr("width", "200")
+                    .attr("height", "200");
+
+                }); 
+
+}
+
+
+///////////////////////////////////////
+// Remove force layout and data
+function map_remove(){
+    simulation.stop();
+    simulation.nodes([]);
+  simulation.force("link").links([]);
+  //var svg = d3.select("svg");
+  var svg_graph = d3.select("#main").select("svg").select("g");
+  svg_graph.selectAll("*").remove();
+  old_Links = [],old_Nodes = [],Nodes = [],Links =[];
+  simulation = null;
+}
+
+
+//////////////////////////////////////
+function refresh_data(d,center_f,with_active_node){
+
+  var nb_layers = 4;
+
+  
+  //new_Nodes = d.nodes.slice(old_Nodes.length);
+  //new_Links = d.links.slice(old_Links.length);
+  // Save the data
+  previous_nodes =  svg_graph.selectAll("g").filter(".node");
+  previous_nodes_data = previous_nodes.data();
+  old_Nodes = updateAdd(old_Nodes,previous_nodes_data);
+  previous_links =  svg_graph.selectAll(".links");
+  //console.log(previous_links);
+  previous_links_data = previous_links.data();
+  old_Links = updateAdd(old_Links,previous_links_data);
+
+  // handle the pinned nodes
+  pinned_Nodes = svg_graph.selectAll("g").filter(".pinned");
+  pinned_nodes_data = pinned_Nodes.data();
+  //old_Nodes = updateAdd(old_Nodes,pinned_nodes_data);
+
+  // get the node data and merge it with the pinned nodes
+  Nodes = d.nodes;
+  //console.log('Nb of pinned nodes: '+ pinned_nodes_data.length)
+  Nodes = updateAdd2(Nodes,pinned_nodes_data);
+  //console.log(Nodes);
+  // add coordinates to the new active nodes that already existed in the previous step
+  Nodes = transfer_coordinates(Nodes,old_Nodes);
+
+  // retrieve the links between nodes and pinned nodes
+  Links = d.links.concat(previous_links_data); // first gather the links
+  //console.log(previous_links_data)
+  Links = find_active_links(Links,Nodes); // then find the ones that are between active nodes
+  //console.log(Links)
+
+  //Links = d.links;
+  //Links = Links.concat(pinned_links_data);
+
+  
+
+
+
+  //////////////////////////////////////
+  // link handling
+
+  // old links become older
+  for (var k=nb_layers;k>0;k--) {
+    kp=k-1;
+    svg_graph.selectAll(".old_links"+kp).attr("class","old_links"+k);
+  };
+ 
+  //attach the data
+  var data_link = svg_graph.selectAll(".links")
+    .data(Links, function(d) { return d.id; });
+  
+  // links not active anymore are classified old_links
+  data_link.exit().attr("class","old_links0");
+
+  // handling active links associated to the data
+  //var link = data_link.enter().merge(data_link).append("g").attr("class", "links").append("line");
+  var link = data_link.enter().append("line").attr("class", "links")
+      .attr("source_ID",function(d) { return d.source;})
+      .attr("target_ID",function(d) { return d.target;});
+ 
+  // previous links plus new links are merged
+  link = link.merge(data_link);
+
+
+  ///////////////////////////////////
+  // node handling
+
+  for (var k=nb_layers;k>0;k--) {
+    kp=k-1;
+    svg_graph.selectAll(".old_node"+kp).attr("class","old_node"+k);
+  };
+
+ //console.log(Nodes);
+
+  var data_node = svg_graph.selectAll("g").filter(".node")
+          .data(Nodes, function(d) { return d.id; });
+
+  //console.log(data_node);
+  // old nodes not active any more are tagged
+  data_node.exit().attr("class","old_node0");
+  data_node.exit().selectAll(".Active").remove();// ???
+
+  // nodes associated to the data are constructed
+  var node = data_node
+          //.enter().merge(data_node).append("g")
+          .enter().append("g")
+          .attr("class", "node").attr("ID",function(d) { return d.id;})
+          .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+  // add node decoration
+  decorate_node(node,with_active_node);
+
+
+  node_pin = d3.selectAll(".Pin");
+  node_pin.on("click",pin_it);
+
+  node.on("click", clicked)
+      .on("mouseover", function(){
+        d3.select(this).select(".Pin").style("visibility", "visible");
+        d3.select(this).selectAll(".text_details").style("visibility", "visible");
+      })
+      .on("mouseout", function(){
+        chosen_node = d3.select(this);
+        if(!chosen_node.classed("pinned"))
+          d3.select(this).select(".Pin").style("visibility", "hidden");
+          var show_checked = document.getElementById ("showName").checked;
+          if (!show_checked)
+            d3.select(this).selectAll(".text_details").style("visibility", "hidden");
+      });
+
+  svg_graph.selectAll("g").filter(".pinned").moveToFront();
+
+  // remove all the duplicates node and links among the old_nodes and old_links
+  d3.selectAll(".node").each(function(d){
+    var ID=d.id;
+    for(n=0;n<nb_layers;n++){
+      list_old_nodes = d3.selectAll(".old_node"+n);
+      //list_old_nodes_data = list_old_nodes.data();
+      list_old_nodes.each(function(d){
+        if(d.id==ID){
+          d3.select(this).remove();
+          //console.log('Removed!!')
+        }
+      })
+    }
+  });
+
+  d3.selectAll(".links").each(function(d){
+    var ID=d.id;
+    for(n=0;n<nb_layers;n++){
+      list_old_links = d3.selectAll(".old_links"+n);
+      //list_old_nodes_data = list_old_nodes.data();
+      list_old_links.each(function(d){
+        if(d.id==ID){
+          d3.select(this).remove();
+          //console.log('Removed!!')
+        }
+      })
+    }
+  });
+
+
+  //////////////////////////////////
+  // Handling mouse events
+
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+    /*
+    svg.selectAll(".old_node").each(function(d){
+      if (d3.select(this).attr("ID")== +d.id) {d3.select(this).remove(); console.log('removed!')};
+    });
+    svg.selectAll(".old_links").each(function(d){
+      if (d3.select(this).attr("target_ID")== +d.id) {d3.select(this).remove(); console.log('removed!')};
+    });
+    svg.selectAll(".old_links").each(function(d){
+      if (d3.select(this).attr("source_ID")== +d.id) {d3.select(this).remove(); console.log('removed!')};
+    });*/
+  }
+
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    // d.fx = null;
+    // d.fy = null;
+  }
+
+  function clicked(d) {
+    d3.select(".Active").remove();
+    //d3.select(this)
+    //  .append("circle").classed("Active",true)
+    //  .attr("r", 4)
+    //  .attr("transform", function(d) { return "translate(-12,-12)"; })
+    //  .attr("fill", function(d) { return color(d.labelV); });
+    var input = document.getElementById ("freeze-in");
+    var isChecked = input.checked;
+    if (isChecked) display_info(d);
+    else {
+      simulation.stop();
+      svg_graph.selectAll(".old_node"+nb_layers).remove();
+      svg_graph.selectAll(".old_links"+nb_layers).remove();
+      display_info(d);
+      click_query(d);              
+    //d3.select(this).attr("class","active_node");
+    }
+  }
+
+  function pin_it(d){
+    d3.event.stopPropagation();
+    node_pin = d3.select(this);
+    pinned_node = d3.select(this.parentNode);
+    //console.log(pinned_node.classed("node"));
+    if (pinned_node.classed("node")){
+      if (!pinned_node.classed("pinned")){
+        pinned_node.classed("pinned",true);
+        console.log('Pinned!');
+        node_pin.attr("fill", "#000");
+        pinned_node.moveToFront();
+      }
+      else {
+        pinned_node.classed("pinned",false);
+        console.log('Unpinned!');
+        node_pin.attr("fill", function(d) { return color(d.labelV); });
+      }
+    }
+  }
+
+  nodeSvg = node.merge(data_node);
+
+  ///////////////////////////////
+  // Force simulation
+  // simulation model and parameters
+  
+  evia.graph = {};
+  evia.graph.simulation = {};
+
+  evia.graph.simulation.initiate = function(center_f){
+    simulation = d3.forceSimulation()
+      .force("charge", d3.forceManyBody().strength(-100))
+      .force("link", d3.forceLink().strength(0.5).id(function(d) { return d.id; }));
+
+    if (center_f == 1){
+      var artist_fy=0.1,band_fy=0.1+0.01,concert_fy=0.1-0.01;
+      var artist_fx=0.1,band_fx=0.1,concert_fx=function(concertDate){return (0.1+0.1*Math.atan((1991-concertDate.getFullYear())/50.0));};
+      simulation.force("center", d3.forceCenter(width / 2, height / 2));
+    }
+    else {
+      var artist_fy=0,band_fy=0.01,concert_fy=-0.01;
+      var artist_fx=0,band_fx=0,concert_fx=function(concertDate){return Math.atan((1991-concertDate.getFullYear())/50.0)/3;};
+    }
+    simulation.force("y",d3.forceY().strength(function(d){
+        if (d.labelV === "Artist") return artist_fy;
+        else if (d.labelV === "Band") return band_fy;
+        else if (d.labelV === "Concert") return concert_fy;
+      }))
+      .force("x",d3.forceX().strength(function(d){
+        if (d.labelV === "Artist") return artist_fx;
+        else if (d.labelV === "Band") return band_fx; 
+        else if (d.labelV === "Concert")   { concertDate = new Date(d.Date); return concert_fx(concertDate);};
+      }));
+    return simulation;
+  }
+
+  simulation = evia.graph.simulation.initiate(center_f);
+  // Associate the simulation with the data
+  simulation.nodes(Nodes).on("tick", ticked);
+  simulation.force("link").links(Links);
+  simulation.alphaTarget(0);
+
+  ////////////////////////
+  // handling simulation steps
+  // move the nodes and links at each simulation step, following this rule:
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+    nodeSvg
+      .attr("transform", function(d) { return "translate(" + d.x + ", " + d.y + ")"; });  
+  }
+  
+}
+
+///////////////////////////////////////////////
+function search_query(){
+  if (simulation) {simulation.stop(); console.log('Simulation stopped!');}
+   post_cypherquery();
+}
+
+
+//////////////////////////////////////////////
+function show_names(){
+  var text_to_show = d3.selectAll(".text_details");
+  var input = document.getElementById ("showName");
+  var isChecked = input.checked;
+  if (isChecked) text_to_show.style("visibility", "visible");
+  else {text_to_show.style("visibility", "hidden");}
+}
+
+</script>
+<!-- ------------------------------------------------- -->
+
+
+
+	</head>
+	<body>
+		<div class="header">
+			<div class="container">
+				<h1 class="header-heading">MJF EXPLORER 0.7.3</h1>
+			</div>
+		</div>
+		<div class="nav-bar">
+			<div class="container">
+				<ul class="nav">
+					<li>Enter a name: <input name="cypher" id="cypher-in" value="King" /></li>
+					<li><label for="type">Select neighbors type:</label>
+    					<select id="n_type" name="type">
+    					<option value="1"> Concerts </option>
+      					<option value="2"> Bands </option>
+      					<option value="3" selected> Concerts and Bands </option>
+      					</select>
+      				</li>
+					<li><button name="post cypher" onclick="search_query();">Search</button></li>
+					<li><button name="show" onclick="refresh_data(graph,center_f=1);">Show</button></li>
+					<li><button name="clear" onclick="map_remove();">Clear</button></li>
+          <li><input type="checkbox" name="Freeze" id="freeze-in" />Freeze exploration</li>
+          <li><input type="checkbox" name="showName_box" id="showName" onclick="show_names()"/>Show names</li>
+				</ul>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="main" id="main">
+					<!--<svg width="800" height="800"></svg>-->
+					<svg width="900" height="900"></svg>
+
+				</div>
+				<div class="aside" id="details" style="background-color:transparent;">
+					<div id="messageArea"></div><div id="outputArea"></div>
+       				<center><svg width="200" height="200"></svg></center>
+				</div>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div  class="main" id="Wiki_details" style="background-color:transparent;">	
+				</div>
+			</div class="container">
+		</div>
+		<div class="footer">
+			<div class="container">
+				<a href="#">About</a>
+			</div>
+		</div>
+	<script type="text/javascript">
+  var width = 960,
+    height = 500,
+    padding = 6, // separation between nodes
+    maxRadius = 12;
+
+var n = 100, // total number of nodes
+    m = 10; // number of distinct clusters
+
+var x = d3.scaleOrdinal(d3.schemeCategory10);
+/*var color = d3.scale.category10()
+    .domain(d3.range(m));
+
+var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangePoints([0, width], 1);
+*/
+
+var svg = d3.select("#main").select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+//var details = d3.select("#details").append("p").text("Click on the nodes to get the details!");
+
+//var svg2text = details;
+var tableD = d3.select("#details").append("table").attr("id","tabledetails");
+var psummary = d3.select("#details").append("p").attr("id","psummary");
+var pwiki = d3.select("#Wiki_details").append("p").attr("id","pwiki");
+var imgd = d3.select("#details").select("svg").append("svg:image");
+
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+var Data = [];
+var graph = [];
+var Nodes = [];
+var Links = [];
+var old_Nodes = [];
+var old_Links = [];
+
+var simulation = null;
+
+evia = {};
+//var evia.toolbox ={};
+evia.graph = {};
+evia.graph.svg = {};
+
+evia.graph.svg.SVG_WIDTH = width;
+evia.graph.svg.SVG_HEIGHT = height;
+
+evia.graph.svg.size = function(){return [this.SVG_WIDTH,this.SVG_HEIGHT]};
+evia.graph.svg.addzoom = function(){
+  this.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .call(d3.zoom()
+        .scaleExtent([1 / 2, 4])
+        .on("zoom", zoomed));
+};
+
+var svg_graph = d3.select("#main").select("svg").append("g");
+  //  .call(d3.zoom().on("zoom", zoomed));
+  //svg=svg1.append("g");
+
+function zoomed() {
+  svg_graph.attr('transform', d3.event.transform);
+}
+
+</script>
+
+	</body>
+</html>
