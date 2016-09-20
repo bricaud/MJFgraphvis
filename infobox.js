@@ -88,8 +88,8 @@ var infobox = (function(){
 	  		$.getJSON(json_file, function(json) {
 	                //console.log(concert_id);
 	                //console.log(+artist_id);
-	                console.log('read json file')
-	                console.log(json[node_id]);
+	                //console.log('read json file')
+	                //console.log(json[node_id]);
 	                //sumD = d3.select("#psummary").text(json[concert_id].summary);
 	                summary.text(json[node_id].summary);
 	                //pw = d3.select("#pwiki");

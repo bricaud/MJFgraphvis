@@ -151,6 +151,8 @@ function arrange_data(data) {
 function decorate_node(node,with_active_node){
   // the node layout is defined here
   // function for drawing the node size according to the node degree
+  
+  var color = d3.scaleOrdinal(d3.schemeCategory10);
   function node_size(d){
     return (2*Math.sqrt(d.degree)+8);
   }
