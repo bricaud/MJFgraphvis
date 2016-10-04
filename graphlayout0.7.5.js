@@ -152,7 +152,14 @@ function decorate_node(node,with_active_node){
   // the node layout is defined here
   // function for drawing the node size according to the node degree
   
-  var color = d3.scaleOrdinal(d3.schemeCategory10);
+  var color_scale = d3.scaleOrdinal(d3.schemeCategory10);
+  var color_list = {"Artist": "#E81042", "Concert": "#80e810", "Band": "#10DDE8"};
+  var color_list = {"Artist": "blue", "Concert": "green", "Band": "orange"};
+  var color_list = {"Artist": color_scale(1), "Band": color_scale(2), "Concert": color_scale(3)};
+  //var color_list = {"Artist": color_scale(7), "Band": color_scale(8), "Concert": color_scale(9)};
+  //color assignment
+  //var get_color = {"gpe": "#E81042", "person": "#80e810", "org": "#10DDE8"};
+
   function node_size(d){
     return (2*Math.sqrt(d.degree)+8);
   }
@@ -169,7 +176,7 @@ function decorate_node(node,with_active_node){
         } else if (d.labelV === "Band") { returnWidth = 2; }
         return returnWidth;})
       .style("stroke","black")
-      .attr("fill", function(d) { return color(d.labelV); });
+      .attr("fill", function(d) { return color_list[d.labelV]; });
 
   //node_base_circle.transition();
 
@@ -230,7 +237,7 @@ function decorate_node(node,with_active_node){
   var node_pin = node.append("circle").classed("Pin",true)
       .attr("r", function(d){return node_size(d)/2;})
       .attr("transform", function(d) { return "translate("+(node_size(d)*3/4)+","+(-node_size(d)*3/4)+")"; })
-      .attr("fill", function(d) { return color(d.labelV); })
+      .attr("fill", function(d) { return color_list[d.labelV]; })
       .moveToBack()
       .style("visibility", "hidden");
 
@@ -244,7 +251,7 @@ function decorate_node(node,with_active_node){
         d3.select(this)
           .append("circle").classed("Active",true)
           .attr("r", n_radius)
-          .attr("fill", function(d) { return color(d.labelV); })
+          .attr("fill", function(d) { return color_list[d.labelV]; })
           .attr("opacity",0.3)
           .moveToBack();
           //.attr("transform", function(d) { return "translate(-12,-12)"; })

@@ -342,6 +342,8 @@ var graph_viz = (function(){
 
 		function pin_it(d){
 			d3.event.stopPropagation();
+			//var color_list = {"Artist": "#E81042", "Concert": "#80e810", "Band": "#10DDE8"};
+			var color_list = {"Artist": color_scale(1), "Band": color_scale(2), "Concert": color_scale(3)};
 			var node_pin = d3.select(this);
 			var pinned_node = d3.select(this.parentNode);
 			//console.log('Pinned!')
@@ -356,7 +358,7 @@ var graph_viz = (function(){
 		    	else {
 		    		pinned_node.classed("pinned",false);
 		    		console.log('Unpinned!');
-		    		node_pin.attr("fill", function(d) { return color(d.labelV); });
+		    		node_pin.attr("fill", function(d) { return color_list[d.labelV]; });
 		    	}
 		    }
 		}
